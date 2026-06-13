@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GEO Audit Engine | Propel Marketing</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@700;900&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#080F1A;color:#E2E8F0;font-family:'Space Grotesk',sans-serif;min-height:100vh}
+
+  /* ── HEADER ── */
+  .header{border-bottom:1px solid #1E2D40;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;background:#0A1628}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-icon{width:30px;height:30px;background:#00B4D8;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#080F1A;font-weight:700}
+  .logo-text{font-weight:700;font-size:15px;color:#E2E8F0}
+  .logo-sub{font-family:'Space Mono',monospace;font-size:9px;color:#00B4D8;letter-spacing:2px;text-transform:uppercase}
+  .hbadge{font-family:'Space Mono',monospace;font-size:9px;color:#00B4D8;border:1px solid #1E3A4A;background:#0D2233;padding:5px 12px;border-radius:4px;letter-spacing:.5px;display:flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none}
+  .hbadge:hover{border-color:#00B4D8}
+  .hbadge .propel{color:#FFFFFF;font-weight:700}
+  .hbadge .sep{color:#1E4A5E;margin:0 2px}
+  .hbadge .claude{color:#00B4D8}
+
+
+
+  /* ── HERO ── */
+  .hero{padding:40px 24px 28px;max-width:860px;margin:0 auto;text-align:center}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:10px;color:#00B4D8;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,46px);font-weight:900;line-height:1.1;color:#F0F6FF;margin-bottom:14px}
+  .hero h1 span{color:#00B4D8}
+  .hero-sub{font-size:15px;color:#7A9BB5;max-width:520px;margin:0 auto 32px;line-height:1.6}
+
+  /* ── INPUT CARD ── */
+  .input-card{background:#0D1F33;border:1px solid #1E3A4A;border-radius:14px;padding:24px;max-width:740px;margin:0 auto}
+  .input-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .ig{display:flex;flex-direction:column;gap:6px}
+  .ilabel{font-family:'Space Mono',monospace;font-size:9px;color:#00B4D8;letter-spacing:2px;text-transform:uppercase}
+  .ifield{background:#080F1A;border:1px solid #1E3A4A;border-radius:8px;padding:11px 13px;color:#E2E8F0;font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%}
+  .ifield:focus{border-color:#00B4D8}
+  .ifield::placeholder{color:#2E4A5E}
+  .ifield:disabled{opacity:.5;cursor:not-allowed}
+  .gbtn{width:100%;padding:15px;background:linear-gradient(135deg,#00B4D8,#0077A8);border:none;border-radius:9px;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:opacity .2s,transform .15s;letter-spacing:.3px}
+  .gbtn:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+  .gbtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  /* ── SCAN ── */
+  .scan-box{max-width:740px;margin:22px auto 0;background:#0D1F33;border:1px solid #1E3A4A;border-radius:14px;padding:26px;display:none}
+  .scan-hdr{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .pulse{width:9px;height:9px;background:#00B4D8;border-radius:50%;animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}}
+  .scan-title{font-family:'Space Mono',monospace;font-size:11px;color:#00B4D8;letter-spacing:2px;text-transform:uppercase}
+  .steps{display:flex;flex-direction:column;gap:9px}
+  .step{display:flex;align-items:center;gap:11px;padding:9px 13px;border-radius:7px;background:#080F1A;border:1px solid #1A2D3D;transition:all .35s}
+  .step.active{border-color:#00B4D8;background:#0A1E30}
+  .step.done{border-color:#16A34A;background:#0A1F14}
+  .sicon{font-family:'Space Mono',monospace;font-size:12px;width:20px;text-align:center;flex-shrink:0;color:#3A6480}
+  .step.active .sicon{color:#00B4D8}
+  .step.done .sicon{color:#4ADE80}
+  .stext{font-size:13px;color:#7A9BB5}
+  .step.active .stext{color:#E2E8F0}
+  .step.done .stext{color:#4ADE80}
+  .pbar{margin-top:20px;background:#080F1A;border-radius:4px;height:3px;overflow:hidden}
+  .pfill{height:100%;background:linear-gradient(90deg,#00B4D8,#0077A8);border-radius:4px;transition:width .5s ease}
+
+  /* ── REPORT ── */
+  .report-wrap{max-width:860px;margin:28px auto 60px;padding:0 24px;display:none}
+  .rhead{background:#0D1F33;border:1px solid #1E3A4A;border-radius:14px 14px 0 0;padding:26px 30px;position:relative;overflow:hidden}
+  .rhead::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(0,180,216,.07) 0%,transparent 70%);pointer-events:none}
+  .rbadge{font-family:'Space Mono',monospace;font-size:9px;color:#00B4D8;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+  .rbizname{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#F0F6FF;margin-bottom:5px}
+  .rmeta{font-family:'Space Mono',monospace;font-size:10px;color:#3A6480;letter-spacing:1px}
+  .scorebar{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #1E3A4A;border-top:none}
+  .scell{padding:17px 20px;border-right:1px solid #1E3A4A;background:#0A1628}
+  .scell:last-child{border-right:none}
+  .slabel{font-family:'Space Mono',monospace;font-size:8px;color:#3A6480;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+  .sval{font-family:'Playfair Display',serif;font-size:26px;font-weight:700}
+  .sval.red{color:#F87171}.sval.yellow{color:#FBBF24}.sval.green{color:#4ADE80}.sval.teal{color:#00B4D8}
+  .ssub{font-size:10px;color:#3A6480;margin-top:2px}
+  .rbody{background:#0D1F33;border:1px solid #1E3A4A;border-top:none;border-radius:0 0 14px 14px;padding:30px}
+  .rsec{margin-bottom:30px}
+  .sec-ey{font-family:'Space Mono',monospace;font-size:8px;color:#00B4D8;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+  .sec-h{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#F0F6FF;margin-bottom:12px}
+  .sdiv{border:none;border-top:1px solid #1A2D3D;margin-bottom:16px}
+  .prose{font-size:14px;color:#94B8CC;line-height:1.75}
+  .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .qi{background:#080F1A;border:1px solid #1A2D3D;border-radius:7px;padding:9px 12px;display:flex;align-items:flex-start;gap:9px}
+  .qn{font-family:'Space Mono',monospace;font-size:9px;color:#00B4D8;margin-top:2px;flex-shrink:0}
+  .qt{font-size:12px;color:#94B8CC;line-height:1.4}
+  .glist{display:flex;flex-direction:column;gap:9px}
+  .gitem{background:#080F1A;border:1px solid #1A2D3D;border-left:3px solid #F87171;border-radius:0 7px 7px 0;padding:11px 14px}
+  .gitem.warn{border-left-color:#FBBF24}
+  .gitem.ok{border-left-color:#4ADE80}
+  .gtitle{font-size:13px;font-weight:600;color:#E2E8F0;margin-bottom:3px}
+  .gdesc{font-size:12px;color:#6B8FA8;line-height:1.5}
+  .alist{display:flex;flex-direction:column;gap:7px}
+  .aitem{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:#080F1A;border:1px solid #1A2D3D;border-radius:7px}
+  .apri{font-family:'Space Mono',monospace;font-size:8px;padding:3px 7px;border-radius:3px;flex-shrink:0;margin-top:2px;letter-spacing:1px}
+  .ph{background:#3B1515;color:#F87171}.pm{background:#2D2200;color:#FBBF24}.pl{background:#0D2D1A;color:#4ADE80}
+  .atitle{font-size:13px;font-weight:600;color:#E2E8F0;margin-bottom:2px}
+  .atl{font-family:'Space Mono',monospace;font-size:9px;color:#3A6480;font-weight:400;margin-left:8px}
+  .adesc{font-size:12px;color:#6B8FA8;line-height:1.5}
+
+  /* ── CTA ── */
+  .rcta{margin-top:28px;background:#0A2233;border:1px solid #1E4A5E;border-radius:11px;padding:24px 28px;text-align:center}
+  .ctatitle{font-family:'Playfair Display',serif;font-size:22px;color:#F0F6FF;margin-bottom:7px}
+  .ctasub{font-size:13px;color:#6B8FA8;margin-bottom:18px}
+  .ctabtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .btnp{padding:11px 24px;background:linear-gradient(135deg,#00B4D8,#0077A8);border:none;border-radius:7px;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:8px}
+  .btnp:hover{opacity:.88}
+  .btns{padding:11px 24px;background:transparent;border:1px solid #1E4A5E;border-radius:7px;color:#7A9BB5;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:border-color .2s,color .2s}
+  .btns:hover{border-color:#00B4D8;color:#00B4D8}
+
+  /* ── MISC ── */
+  .errbox{max-width:740px;margin:16px auto 0;background:#1A0A0A;border:1px solid #5B1E1E;border-radius:9px;padding:16px 20px;color:#F87171;font-size:13px;display:none}
+
+  /* ── MODAL ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:999;padding:20px}
+  .modal-overlay.open{display:flex}
+  .modal{background:#0D1F33;border:1px solid #1E3A4A;border-radius:16px;padding:36px 32px;max-width:460px;width:100%;position:relative}
+  .modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#3A6480;font-size:20px;cursor:pointer;line-height:1}
+  .modal-close:hover{color:#E2E8F0}
+  .modal-lock{width:42px;height:42px;background:#0A2233;border:1px solid #1E4A5E;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 18px}
+  .modal-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#F0F6FF;text-align:center;margin-bottom:8px}
+  .modal-sub{font-size:13px;color:#6B8FA8;text-align:center;margin-bottom:24px;line-height:1.6}
+  .modal-ig{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .modal-label{font-family:'Space Mono',monospace;font-size:9px;color:#00B4D8;letter-spacing:2px;text-transform:uppercase}
+  .modal-input{background:#080F1A;border:1px solid #1E3A4A;border-radius:8px;padding:11px 13px;color:#E2E8F0;font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%}
+  .modal-input:focus{border-color:#00B4D8}
+  .modal-input::placeholder{color:#2E4A5E}
+  .modal-input.err{border-color:#F87171}
+  .modal-err{font-size:12px;color:#F87171;margin-top:-8px;margin-bottom:4px;display:none}
+  .modal-btn{width:100%;padding:14px;background:linear-gradient(135deg,#00B4D8,#0077A8);border:none;border-radius:9px;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:opacity .2s;margin-top:6px}
+  .modal-btn:hover{opacity:.88}
+  .modal-note{font-size:11px;color:#3A6480;text-align:center;margin-top:14px;line-height:1.5}
+  .modal-note a{color:#00B4D8;text-decoration:none}
+  .modal-note a:hover{text-decoration:underline}
+
+  /* ── TOAST ── */
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0A2D1A;border:1px solid #16A34A;border-radius:9px;padding:13px 22px;color:#4ADE80;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;z-index:1000;animation:fadeup .3s ease;white-space:nowrap}
+  @keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+  @media(max-width:620px){
+    .input-grid{grid-template-columns:1fr}
+    .scorebar{grid-template-columns:1fr 1fr}
+    .qgrid{grid-template-columns:1fr}
+    .report-wrap{padding:0 12px}
+    .api-banner{gap:8px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">G</div>
+    <div>
+      <div class="logo-text">GEO Audit Engine</div>
+      <div class="logo-sub">AI Visibility Intelligence</div>
+    </div>
+  </div>
+  <a class="hbadge" href="https://www.propelmarketing.org" target="_blank">
+    POWERED BY <span class="propel">PROPEL</span><span class="sep">&</span><span class="claude">CLAUDE AI</span>
+  </a>
+</header>
+
+
+
+<!-- ─── HERO ─── -->
+<div class="hero">
+  <div class="eyebrow">Propel · GEO Audit Generator</div>
+  <h1>Is Your Prospect <span>Invisible</span><br>to AI Search?</h1>
+  <p class="hero-sub">Enter any business and instantly generate a full GEO audit — visibility scores, 20 customer queries, critical gaps, competitor insight, and a prioritized action plan ready to send.</p>
+</div>
+
+<!-- ─── INPUT ─── -->
+<div class="input-card">
+  <div class="input-grid">
+    <div class="ig">
+      <label class="ilabel">Business Name *</label>
+      <input class="ifield" id="bizName" placeholder="e.g. Valley Furniture McAllen" />
+    </div>
+    <div class="ig">
+      <label class="ilabel">Industry / Niche *</label>
+      <input class="ifield" id="industry" placeholder="e.g. Furniture Retailer" />
+    </div>
+    <div class="ig">
+      <label class="ilabel">Website URL</label>
+      <input class="ifield" id="website" placeholder="e.g. www.valleyfurniture.com" />
+    </div>
+    <div class="ig">
+      <label class="ilabel">City / Region</label>
+      <input class="ifield" id="city" placeholder="e.g. McAllen, TX" />
+    </div>
+  </div>
+  <button class="gbtn" id="genBtn" onclick="generate()">Generate AI Visibility Audit →</button>
+</div>
+
+<div class="errbox" id="errbox"></div>
+
+<!-- ─── SCAN ─── -->
+<div class="scan-box" id="scanBox">
+  <div class="scan-hdr"><div class="pulse"></div><div class="scan-title">Scanning AI Visibility</div></div>
+  <div class="steps" id="steps"></div>
+  <div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+</div>
+
+<!-- ─── REPORT ─── -->
+<div class="report-wrap" id="reportWrap"></div>
+
+<!-- ─── GATE MODAL ─── -->
+<div class="modal-overlay" id="gateModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-lock">🔒</div>
+    <div class="modal-title">Download PDF Report</div>
+    <div class="modal-sub">Enter the prospect's details to generate their branded PDF audit — ready to send or present.</div>
+    <div class="modal-ig">
+      <label class="modal-label">Prospect Name *</label>
+      <input class="modal-input" id="gName" placeholder="e.g. Maria Garcia" />
+    </div>
+    <div class="modal-ig">
+      <label class="modal-label">Prospect Business *</label>
+      <input class="modal-input" id="gBiz" placeholder="e.g. Valley Furniture McAllen" />
+    </div>
+    <div class="modal-ig">
+      <label class="modal-label">Prospect Email *</label>
+      <input class="modal-input" id="gEmail" placeholder="e.g. maria@valleyfurniture.com" type="email" />
+    </div>
+    <div class="modal-err" id="gateErr">Please fill in all fields with a valid email.</div>
+    <button class="modal-btn" onclick="submitGate()">Generate & Download PDF →</button>
+    <div class="modal-note">
+      PDF is branded with their info and your Propel contact details.<br>
+      <a href="mailto:david@propelmarketing.org">david@propelmarketing.org</a> · <a href="https://www.propelmarketing.org" target="_blank">propelmarketing.org</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SCAN_STEPS = [
+    "Analyzing business & industry context",
+    "Identifying target customer search patterns",
+    "Generating AI query simulation (20 queries)",
+    "Evaluating content gaps vs. AI citation requirements",
+    "Assessing technical GEO readiness",
+    "Scoring AI visibility across platforms",
+    "Building prioritized action plan",
+    "Compiling audit report"
+  ];
+
+  let scanInterval = null, currentStep = 0, reportData = null;
+
+
+
+  function setDisabled(v) {
+    ['bizName','industry','website','city'].forEach(id => document.getElementById(id).disabled = v);
+    document.getElementById('genBtn').disabled = v;
+  }
+
+  function startScan() {
+    document.getElementById('scanBox').style.display = 'block';
+    document.getElementById('steps').innerHTML = SCAN_STEPS.map((s,i) =>
+      `<div class="step" id="step${i}"><span class="sicon">·</span><span class="stext">${s}</span></div>`
+    ).join('');
+    currentStep = 0;
+    document.getElementById('pfill').style.width = '0%';
+    scanInterval = setInterval(() => {
+      if (currentStep > 0) {
+        const p = document.getElementById('step' + (currentStep - 1));
+        if (p) { p.className = 'step done'; p.querySelector('.sicon').textContent = '✓'; p.querySelector('.sicon').style.color = '#4ADE80'; p.querySelector('.stext').style.color = '#4ADE80'; }
+      }
+      if (currentStep < SCAN_STEPS.length) {
+        const c = document.getElementById('step' + currentStep);
+        if (c) { c.className = 'step active'; c.querySelector('.sicon').textContent = '›'; c.querySelector('.sicon').style.color = '#00B4D8'; }
+        document.getElementById('pfill').style.width = Math.round(((currentStep + 1) / SCAN_STEPS.length) * 85) + '%';
+        currentStep++;
+      }
+    }, 600);
+  }
+
+  function stopScan() {
+    clearInterval(scanInterval);
+    document.getElementById('pfill').style.width = '100%';
+    for (let i = 0; i < SCAN_STEPS.length; i++) {
+      const el = document.getElementById('step' + i);
+      if (el) { el.className = 'step done'; el.querySelector('.sicon').textContent = '✓'; el.querySelector('.sicon').style.color = '#4ADE80'; el.querySelector('.stext').style.color = '#4ADE80'; }
+    }
+  }
+
+  function scoreColor(n) { return n >= 70 ? 'green' : n >= 40 ? 'yellow' : 'red'; }
+
+  function parseSection(text, tag) {
+    const m = text.match(new RegExp('<' + tag + '>[\\s\\S]*?<\\/' + tag + '>', 'i'));
+    return m ? m[0].replace(new RegExp('<\\/?' + tag + '>', 'gi'), '').trim() : '';
+  }
+  function parseJSON(text, tag) { try { return JSON.parse(parseSection(text, tag)); } catch { return null; } }
+
+  function openModal() { document.getElementById('gateModal').classList.add('open'); document.getElementById('gName').focus(); }
+  function closeModal() {
+    document.getElementById('gateModal').classList.remove('open');
+    document.getElementById('gateErr').style.display = 'none';
+    ['gName','gBiz','gEmail'].forEach(id => document.getElementById(id).classList.remove('err'));
+  }
+  function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+  function submitGate() {
+    const name = document.getElementById('gName').value.trim();
+    const biz  = document.getElementById('gBiz').value.trim();
+    const email = document.getElementById('gEmail').value.trim();
+    let valid = true;
+    ['gName','gBiz','gEmail'].forEach(id => document.getElementById(id).classList.remove('err'));
+    if (!name)  { document.getElementById('gName').classList.add('err');  valid = false; }
+    if (!biz)   { document.getElementById('gBiz').classList.add('err');   valid = false; }
+    if (!email || !isValidEmail(email)) { document.getElementById('gEmail').classList.add('err'); valid = false; }
+    if (!valid) { document.getElementById('gateErr').style.display = 'block'; return; }
+    document.getElementById('gateErr').style.display = 'none';
+    closeModal();
+    generatePDF({ name, biz, email });
+  }
+
+  function generatePDF(lead) {
+    const r = reportData; if (!r) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, ml = 18, mr = 18, cw = W - ml - mr; let y = 0;
+    const h2r = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+    const sC = h => { const [a,b,c] = h2r(h); doc.setTextColor(a,b,c); };
+    const sF = h => { const [a,b,c] = h2r(h); doc.setFillColor(a,b,c); };
+    const sD = h => { const [a,b,c] = h2r(h); doc.setDrawColor(a,b,c); };
+
+    // Cover header
+    sF('#0D1B2A'); doc.rect(0,0,W,52,'F');
+    sF('#00B4D8'); doc.rect(0,0,W,4,'F');
+    sC('#00B4D8'); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text('PROPEL MARKETING  ·  AI VISIBILITY INTELLIGENCE  ·  propelmarketing.org', ml, 14);
+    sC('#FFFFFF'); doc.setFontSize(22); doc.text('AI Visibility Audit Report', ml, 28);
+    sC('#7A9BB5'); doc.setFontSize(10); doc.setFont('helvetica','normal');
+    doc.text(`${r.bizName}  ·  ${r.industry}${r.city ? ' · ' + r.city : ''}  ·  ${r.date}`, ml, 38);
+    sC('#3A6480'); doc.setFontSize(8);
+    doc.text(`Prepared for: ${lead.name}  |  ${lead.biz}  |  ${lead.email}`, ml, 47);
+    y = 60;
+
+    // Score cards
+    const cards = [
+      { label: 'Overall AI Score', val: `${r.overallScore}/100`, sub: r.grade, color: r.overallScore>=70?'#4ADE80':r.overallScore>=40?'#FBBF24':'#F87171' },
+      { label: 'Google Gemini',    val: `${r.geminiScore}/100`,  sub: 'Visibility', color: r.geminiScore>=70?'#4ADE80':r.geminiScore>=40?'#FBBF24':'#F87171' },
+      { label: 'ChatGPT',          val: `${r.chatgptScore}/100`, sub: 'Visibility', color: r.chatgptScore>=70?'#4ADE80':r.chatgptScore>=40?'#FBBF24':'#F87171' },
+      { label: 'Action Items',     val: `${r.actionPlan.length}`, sub: 'Identified', color: '#00B4D8' }
+    ];
+    const cw4 = (cw - 6) / 4;
+    cards.forEach((c, i) => {
+      const cx = ml + i * (cw4 + 2);
+      sF('#0D1F33'); sD('#1E3A4A'); doc.setLineWidth(0.3); doc.roundedRect(cx, y, cw4, 28, 2, 2, 'FD');
+      sC('#3A6480'); doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.text(c.label.toUpperCase(), cx+cw4/2, y+8, {align:'center'});
+      const [r2,g2,b2] = h2r(c.color); doc.setTextColor(r2,g2,b2); doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.text(c.val, cx+cw4/2, y+19, {align:'center'});
+      sC('#3A6480'); doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.text(c.sub, cx+cw4/2, y+25, {align:'center'});
+    });
+    y += 36;
+
+    function secH(label, title) {
+      sC('#00B4D8'); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(label.toUpperCase(), ml, y); y += 5;
+      sC('#0D1B2A'); doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.text(title, ml, y); y += 3;
+      sD('#1E3A4A'); doc.setLineWidth(0.3); doc.line(ml, y, W-mr, y); y += 6;
+    }
+    function chk(n = 20) { if (y + n > 285) { doc.addPage(); y = 18; } }
+
+    // Summary
+    chk(40); secH('Executive Summary', 'Current AI Visibility Status');
+    sC('#374151'); doc.setFontSize(10); doc.setFont('helvetica','normal');
+    const sl = doc.splitTextToSize(r.summary, cw); doc.text(sl, ml, y); y += sl.length * 5 + 10;
+
+    // Queries
+    chk(30); secH('Query Simulation', 'What Customers Are Asking AI Right Now');
+    if (r.queries && r.queries.length) {
+      const half = Math.ceil(r.queries.length/2), c1 = r.queries.slice(0,half), c2 = r.queries.slice(half), qw = (cw-6)/2, sy = y;
+      c1.forEach((q,i) => { chk(10); sF('#F8FAFF'); sD('#E2E8F0'); doc.setLineWidth(0.2); doc.roundedRect(ml,y,qw,9,1,1,'FD'); sC('#00B4D8'); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(String(i+1).padStart(2,'0'),ml+2,y+6); sC('#374151'); doc.setFont('helvetica','normal'); doc.text(doc.splitTextToSize(`"${q}"`,qw-10)[0],ml+8,y+6); y+=11; });
+      c2.forEach((q,i) => { const ry=sy+i*11; sF('#F8FAFF'); sD('#E2E8F0'); doc.setLineWidth(0.2); doc.roundedRect(ml+qw+6,ry,qw,9,1,1,'FD'); sC('#00B4D8'); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(String(i+half+1).padStart(2,'0'),ml+qw+8,ry+6); sC('#374151'); doc.setFont('helvetica','normal'); doc.text(doc.splitTextToSize(`"${q}"`,qw-10)[0],ml+qw+14,ry+6); });
+      y = Math.max(y, sy + c2.length*11) + 6;
+    }
+
+    // Gaps
+    chk(30); secH('Gap Analysis', 'Critical Visibility Gaps Found');
+    if (r.gaps && r.gaps.length) {
+      r.gaps.forEach(g => {
+        chk(18);
+        const ac = g.severity==='high'?'#F87171':g.severity==='medium'?'#FBBF24':'#4ADE80';
+        sF('#F8FAFF'); sD('#E2E8F0'); doc.setLineWidth(0.2);
+        const dl = doc.splitTextToSize(g.desc, cw-10), bh = 14+dl.length*4.5;
+        doc.roundedRect(ml,y,cw,bh,1,1,'FD');
+        const [ar,ag,ab] = h2r(ac); doc.setFillColor(ar,ag,ab); doc.rect(ml,y,3,bh,'F');
+        sC('#0D1B2A'); doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.text(g.title,ml+7,y+7);
+        sC('#6B7280'); doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.text(dl,ml+7,y+12);
+        y += bh+4;
+      });
+    }
+
+    // Competitor
+    if (r.competitorInsight) {
+      chk(30); secH('Competitive Landscape', "Who's Getting Cited Instead of You");
+      sC('#374151'); doc.setFontSize(10); doc.setFont('helvetica','normal');
+      const cl = doc.splitTextToSize(r.competitorInsight, cw); doc.text(cl,ml,y); y += cl.length*5+10;
+    }
+
+    // Action plan
+    chk(30); secH('Action Plan', 'Prioritized GEO Roadmap');
+    if (r.actionPlan && r.actionPlan.length) {
+      r.actionPlan.forEach(a => {
+        chk(18);
+        const pb = a.priority==='HIGH'?'#FEE2E2':a.priority==='MED'?'#FEF9C3':'#DCFCE7';
+        const pt = a.priority==='HIGH'?'#991B1B':a.priority==='MED'?'#854D0E':'#166534';
+        sF('#F8FAFF'); sD('#E2E8F0'); doc.setLineWidth(0.2);
+        const dl = doc.splitTextToSize(a.desc, cw-38), bh = 14+dl.length*4.5;
+        doc.roundedRect(ml,y,cw,bh,1,1,'FD');
+        const [pbr,pbg,pbb] = h2r(pb); doc.setFillColor(pbr,pbg,pbb); doc.roundedRect(ml+3,y+4,14,6,1,1,'F');
+        const [ptr,ptg,ptb] = h2r(pt); doc.setTextColor(ptr,ptg,ptb); doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.text(a.priority,ml+10,y+8.5,{align:'center'});
+        sC('#0D1B2A'); doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.text(a.title,ml+20,y+7);
+        sC('#6B7280'); doc.setFontSize(7); doc.setFont('helvetica','normal'); if(a.timeline) doc.text(a.timeline,W-mr,y+7,{align:'right'});
+        sC('#374151'); doc.setFontSize(8); doc.text(dl,ml+20,y+12);
+        y += bh+4;
+      });
+    }
+
+    // Footer CTA
+    chk(30); y += 4;
+    sF('#0A2233'); sD('#1E4A5E'); doc.setLineWidth(0.3); doc.roundedRect(ml,y,cw,30,3,3,'FD');
+    sC('#F0F6FF'); doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.text("Ready to fix your AI visibility?", W/2, y+10, {align:'center'});
+    sC('#00B4D8'); doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.text("Contact Propel to start your GEO optimization — most competitors haven't started yet.", W/2, y+18, {align:'center'});
+    sC('#7A9BB5'); doc.setFontSize(8); doc.text('david@propelmarketing.org  ·  www.propelmarketing.org', W/2, y+25, {align:'center'});
+
+    doc.save(`Propel_GEO_Audit_${r.bizName.replace(/\s+/g,'_')}.pdf`);
+    showToast('PDF saved — ready to send!');
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = '✓ ' + msg;
+    document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
+  }
+
+  function renderReport(r) {
+    reportData = r;
+    const wrap = document.getElementById('reportWrap'); wrap.style.display = 'block';
+    const qHTML = r.queries.map((q,i) => `<div class="qi"><span class="qn">${String(i+1).padStart(2,'0')}</span><span class="qt">"${q}"</span></div>`).join('');
+    const gHTML = r.gaps.map(g => `<div class="gitem ${g.severity==='high'?'':g.severity==='medium'?'warn':'ok'}"><div class="gtitle">${g.title}</div><div class="gdesc">${g.desc}</div></div>`).join('');
+    const aHTML = r.actionPlan.map(a => `<div class="aitem"><span class="apri ${a.priority==='HIGH'?'ph':a.priority==='MED'?'pm':'pl'}">${a.priority}</span><div><div class="atitle">${a.title}<span class="atl">${a.timeline||''}</span></div><div class="adesc">${a.desc}</div></div></div>`).join('');
+    wrap.innerHTML = `
+    <div class="rhead"><div class="rbadge">AI Visibility Audit Report</div><div class="rbizname">${r.bizName}</div><div class="rmeta">${r.industry}${r.city?' · '+r.city:''} · Generated ${r.date}</div></div>
+    <div class="scorebar">
+      <div class="scell"><div class="slabel">Overall AI Score</div><div class="sval ${scoreColor(r.overallScore)}">${r.overallScore}/100</div><div class="ssub">${r.grade}</div></div>
+      <div class="scell"><div class="slabel">Google Gemini</div><div class="sval ${scoreColor(r.geminiScore)}">${r.geminiScore}/100</div><div class="ssub">Visibility Score</div></div>
+      <div class="scell"><div class="slabel">ChatGPT</div><div class="sval ${scoreColor(r.chatgptScore)}">${r.chatgptScore}/100</div><div class="ssub">Visibility Score</div></div>
+      <div class="scell"><div class="slabel">Action Items</div><div class="sval teal">${r.actionPlan.length}</div><div class="ssub">Identified</div></div>
+    </div>
+    <div class="rbody">
+      <div class="rsec"><div class="sec-ey">Executive Summary</div><div class="sec-h">Current AI Visibility Status</div><hr class="sdiv"><p class="prose">${r.summary}</p></div>
+      ${r.queries.length?`<div class="rsec"><div class="sec-ey">Query Simulation</div><div class="sec-h">What Customers Are Asking AI Right Now</div><hr class="sdiv"><div class="qgrid">${qHTML}</div></div>`:''}
+      ${r.gaps.length?`<div class="rsec"><div class="sec-ey">Gap Analysis</div><div class="sec-h">Critical Visibility Gaps Found</div><hr class="sdiv"><div class="glist">${gHTML}</div></div>`:''}
+      ${r.competitorInsight?`<div class="rsec"><div class="sec-ey">Competitive Landscape</div><div class="sec-h">Who's Getting Cited Instead of You</div><hr class="sdiv"><p class="prose">${r.competitorInsight}</p></div>`:''}
+      ${r.actionPlan.length?`<div class="rsec"><div class="sec-ey">Action Plan</div><div class="sec-h">Prioritized GEO Roadmap</div><hr class="sdiv"><div class="alist">${aHTML}</div></div>`:''}
+      <div class="rcta">
+        <div class="ctatitle">Generate the PDF Leave-Behind</div>
+        <div class="ctasub">${r.closingPitch||'Every month you wait, competitors are earning the AI citations you should own.'}</div>
+        <div class="ctabtns">
+          <button class="btnp" onclick="openModal()"><span>⬇</span> Download PDF Report</button>
+          <button class="btns" onclick="resetApp()">Run Another Audit</button>
+        </div>
+      </div>
+    </div>`;
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetApp() {
+    reportData = null;
+    ['reportWrap','scanBox','errbox'].forEach(id => document.getElementById(id).style.display = 'none');
+    setDisabled(false);
+    document.getElementById('genBtn').textContent = 'Generate AI Visibility Audit →';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function generate() {
+    const bizName  = document.getElementById('bizName').value.trim();
+    const industry = document.getElementById('industry').value.trim();
+    const website  = document.getElementById('website').value.trim();
+    const city     = document.getElementById('city').value.trim();
+    if (!bizName || !industry) {
+      document.getElementById('errbox').textContent = '⚠ Business Name and Industry are required.';
+      document.getElementById('errbox').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('errbox').style.display = 'none';
+    document.getElementById('reportWrap').style.display = 'none';
+    setDisabled(true);
+    document.getElementById('genBtn').textContent = 'Generating Audit Report…';
+    startScan();
+
+    const prompt = `You are a senior Generative Engine Optimization (GEO) analyst. Generate a detailed AI Visibility Audit Report for the following business.
+
+BUSINESS INFO:
+- Name: ${bizName}
+- Website: ${website || 'not provided'}
+- Industry: ${industry}
+- Location: ${city || 'not specified'}
+
+Structure your response using EXACTLY these XML tags:
+
+<overall_score>A number from 0-100 representing current AI visibility score</overall_score>
+<gemini_score>A number from 0-100 for Google Gemini visibility specifically</gemini_score>
+<chatgpt_score>A number from 0-100 for ChatGPT visibility specifically</chatgpt_score>
+<visibility_grade>One of: Critical / Poor / Fair / Good / Strong</visibility_grade>
+<executive_summary>2-3 sentences summarizing their current AI visibility situation, what's at stake, and the key opportunity. Be specific to their industry and location.</executive_summary>
+<queries>
+A JSON array of exactly 20 search queries that potential customers would type into Gemini or ChatGPT. Mix local, category, and problem-based queries. Format: ["query 1", "query 2", ...]
+</queries>
+<gaps>
+A JSON array of 6 critical gaps: { "title": "short gap name", "desc": "1-2 sentence explanation", "severity": "high" | "medium" | "low" }
+</gaps>
+<competitor_insight>2-3 sentences about what types of competitors ARE likely being cited by AI engines and why.</competitor_insight>
+<action_plan>
+A JSON array of 8 prioritized action items: { "title": "action name", "desc": "specific 1-sentence description", "priority": "HIGH" | "MED" | "LOW", "timeline": "e.g. Week 1" }
+</action_plan>
+<closing_pitch>One compelling sentence creating urgency for this specific business to act on GEO now.</closing_pitch>
+
+Be specific and tailored to their industry. Do not be generic.`;
+
+    // Propel secure proxy — hosted on Vercel
+    const PROXY_URL = 'https://propel-geo-proxy.vercel.app/api/claude';
+
+    try {
+      const res = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error?.message || 'Proxy error ' + res.status);
+      }
+      const data = await res.json();
+      const text = data.content.map(b => b.text || '').join('');
+
+      const overall  = parseInt(parseSection(text, 'overall_score'))  || 28;
+      const gemini   = parseInt(parseSection(text, 'gemini_score'))   || 22;
+      const chatgpt  = parseInt(parseSection(text, 'chatgpt_score'))  || 30;
+      const grade    = parseSection(text, 'visibility_grade') || 'Poor';
+      const summary  = parseSection(text, 'executive_summary') || '';
+      const queries  = parseJSON(text, 'queries')     || [];
+      const gaps     = parseJSON(text, 'gaps')        || [];
+      const competitorInsight = parseSection(text, 'competitor_insight') || '';
+      const actionPlan = parseJSON(text, 'action_plan') || [];
+      const closingPitch = parseSection(text, 'closing_pitch') || '';
+      const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      stopScan();
+      await new Promise(r => setTimeout(r, 500));
+      renderReport({ bizName, website, industry, city, overallScore: overall, geminiScore: gemini, chatgptScore: chatgpt, grade, summary, queries, gaps, competitorInsight, actionPlan, closingPitch, date });
+
+    } catch (e) {
+      stopScan();
+      const eb = document.getElementById('errbox');
+      eb.textContent = '⚠ ' + (e.message || 'Failed to generate report. Check your API key and try again.');
+      eb.style.display = 'block';
+    } finally {
+      setDisabled(false);
+      document.getElementById('genBtn').textContent = 'Generate AI Visibility Audit →';
+    }
+  }
+</script>
+</body>
+</html>
